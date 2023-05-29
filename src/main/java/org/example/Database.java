@@ -29,9 +29,3 @@ public class Database {
         return connection;
     }
 }
-
-class DatabaseTest {
-    public static void main(String[] args) {
-        System.out.println(Database.getInstance().getConnection());
-    }
-}

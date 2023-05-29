@@ -1,6 +1,15 @@
 package org.example;
 
+import org.example.models.Level;
+import org.example.models.LongestProject;
+import org.example.models.MaxProjectsClient;
+import org.example.models.MaxSalaryWorker;
+import org.example.models.ProjectPrices;
+import org.example.models.Worker;
+import org.example.models.YoungestEldestWorkers;
+
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,9 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseQueryService {
+    private static final String SELECT_WORKER_BY_NAME_STRING =
+            "SELECT id, name, birthday, level, salary FROM worker WHERE name = ?";
 
     public static void main(String[] args) {
         DatabaseQueryService service = new DatabaseQueryService();
+        System.out.println("---WorkerByName---");
+        System.out.println(service.findWorkerByName("Jack"));
+        System.out.println(service.findWorkerByName("Jane"));
         System.out.println("---LongestProject---");
         System.out.println(service.findLongestProject());
         System.out.println("---MaxProjectsClient---");
@@ -22,6 +36,23 @@ public class DatabaseQueryService {
         System.out.println(service.findYoungestEldestWorkers());
         System.out.println("---ProjectPrices---");
         System.out.println(service.printProjectPrices());
+    }
+
+    public List<Worker> findWorkerByName(String name) {
+        List<Worker> result = new ArrayList<>();
+        Connection conn = Database.getInstance().getConnection();
+        try (PreparedStatement selectWorkerStmt = conn.prepareStatement(SELECT_WORKER_BY_NAME_STRING)) {
+            selectWorkerStmt.setString(1, name);
+            ResultSet resultSet = selectWorkerStmt.executeQuery();
+            while (resultSet.next()) {
+                result.add(new Worker(resultSet.getInt(1), resultSet.getString(2),
+                        LocalDate.parse(resultSet.getString(3)), Level.fromName(resultSet.getString(4)),
+                        resultSet.getInt(5)));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
     }
 
     public List<LongestProject> findLongestProject() {
